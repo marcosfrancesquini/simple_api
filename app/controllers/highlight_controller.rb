@@ -5,25 +5,26 @@ class HighlightController < ApplicationController
             render json: {message: "Latitude and Longitude is required"}, status: 401
             return;
         end
-        
+
+        latitude =  params[:latitude]
+        longitude =  params[:longitude]
+        responseStyle = 'short'
+        citySize = 'cities15000'
+        radius = 10
+        maxRows = 5
+        username = 'marcos'
+
+        url = URI.escape("http://api.geonames.org/findNearbyPlaceNameJSON?lat=#{latitude}&lng=#{longitude}&style=#{responseStyle}&cities=#{citySize}&radius=#{radius}&maxRows=#{maxRows}&username=#{username}")
+        nearbyCities = JSON.parse(HTTParty.get(url).body)
         points = []
-        points << {
-            latitude: 34567,
-            longitude: -6587,
-            name: "Night Club"
-        }
-
-        points << {
-            latitude: 47552,
-            longitude: -4244,
-            name: "Big River"
-        }
-
-        points << {
-            latitude: 98552,
-            longitude: -3244,
-            name: "Japanese food"
-        }
+        cities = nearbyCities["geonames"]
+        if cities.present?
+            cities = cities.map{|n|n["name"]}
+            cities.each_with_index do |cidade, index|
+                points << cidade
+            end
+        end
+    
         render json: points, status: 200
     end
 end
